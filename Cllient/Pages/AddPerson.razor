@@ -1,0 +1,146 @@
+﻿@page "/ManagerPerson"
+@using global::Models
+@using Assignment.Models
+@using FileData
+@using System.Data.Common
+<h3>AddPerson</h3>
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<AuthorizeView>
+    <NotAuthorized>
+        <p>You don't have permission to access!</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+<AuthorizeView Policy="Admin">
+
+    <div class="form-group">
+        <label>Firstname：</label>
+        <input type="text" placeholder="firstname" @bind-value="firstname"/>
+    </div>
+
+    <div class="form-group">
+        <label>Lastname：</label>
+        <input type="text" placeholder="lastname" @bind-value="lastname"/>
+    </div>
+    <div class="form-group">
+        <label>Age:</label>
+        <input type="text" placeholder="age" oninput="value=value.replace(/[^\d]/g,'')" @bind-value="age"/>
+    </div>
+
+
+    <div class="form-group">
+        <label>Sex:</label>
+        <select @onchange="@setSex">
+            <option value="M">M</option>
+            <option value="F">F</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Haircolor:</label>
+        <select @onchange="@setHair">
+            <option value="Blond">Blond</option>
+            <option value="Red">Red</option>
+            <option value="Brown">Brown</option>
+            <option value="Black">Black</option>
+            <option value="White">White</option>
+            <option value="Grey">Grey</option>
+            <option value="Blue">Blue</option>
+            <option value="Green">Green</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label>Eyecolor:</label>
+        <select @onchange="@setEye">
+            <option value="Brown">Brown</option>
+            <option value="Amber">Amber</option>
+            <option value="Hazel">Hazel</option>
+            <option value="Grey">Grey</option>
+            <option value="Blue">Blue</option>
+            <option value="Green">Green</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label>Height:</label>
+        <input type="text" placeholder="height" oninput="value=value.replace(/[^\d]/g,'')" @bind-value="height"/>
+    </div>
+    <div class="form-group">
+        <label>Weight:</label>
+        <input type="text" placeholder="weight" oninput="value=value.replace(/[^\d.]/g,'')" @bind-value="weight"/>
+    </div>
+
+    <div class="form-group">
+        <label>Job:</label>
+        <input type="text" placeholder="job" @bind-value="job"/>
+    </div>
+
+    <button @onclick="addPerson">
+        add
+    </button>
+    <div style="color:red">@message</div>
+</AuthorizeView>
+
+@code {
+    private string firstname;
+    private string lastname;
+    private string sex = "M";
+    private int age;
+    private string hairColor="Blond";
+    private string eyeColor="Brown";
+    private int height;
+    private float weight;
+    private string message;
+    private string job;
+
+    public void setHair(ChangeEventArgs args)
+    {
+        string result = args.Value.ToString();
+        hairColor = result;
+    }
+
+    public void setEye(ChangeEventArgs args)
+    {
+        string result = args.Value.ToString();
+        eyeColor = result;
+    }
+
+    public void setSex(ChangeEventArgs args)
+    {
+        string result = args.Value.ToString();
+        sex = result;
+    }
+
+    public async Task addPerson()
+    {
+        message = "";
+        try
+        {
+            Person person = new Person();
+            Adult adult = new Adult();
+            FileContext fileContext = new FileContext();
+            person.id = fileContext.Adults.Count;
+            person.firstName = firstname;
+            person.lastName = lastname;
+            person.sex = sex;
+            person.age = age;
+            person.eyeColor = eyeColor;
+            person.hairColor = hairColor;
+            person.height = height;
+            person.weight = weight;
+            adult.jobTitle = job;
+            adult.Update(person);
+            fileContext.Adults.Add(adult);
+            ClientModel.getInstance().addAdult(adult);
+            fileContext.SaveChanges();
+            message = "Add succeed!";
+        }
+        catch (Exception e)
+        {
+            message = e.Message;
+        }
+    }
+
+}
